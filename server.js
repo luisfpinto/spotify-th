@@ -31,26 +31,20 @@ app.get('/search/:name', function (req, res) {
     var getRelated = getFromApi('artists/' + mainArtistId + '/related-artists')
     getRelated.on('end', function (item) {
       artist.related = item.artists
-      const artistsNumber = artist.related.length
-      console.log(item.artists.length)
-      for (var i = 0, j = 0; i < artistsNumber; i++) {
-        const artistId = artist.related[i].id
-        console.log(artist.related[i].name)
-        var topTracks = getFromApi('artists/' + artistId + '/top-tracks', {
+      const artistsNumber = artist.related.length // Number of artists
+      var counter = 0
+      artist.related.forEach(function (artistInfo, index) {
+        var topTracks = getFromApi('artists/' + artistInfo.id + '/top-tracks', {
           country: 'SE'
         })
         topTracks.on('end', function (item) {
-          console.log('Respuesta')
-          artist.related[j].tracks = item.tracks
-          j++
-          if (j === artistsNumber) {
-            console.log(item)
-            console.log('Final')
+          artist.related[index].tracks = item.tracks
+          counter = counter + 1
+          if (counter === artistsNumber) {
             res.json(artist)
           }
         })
-      }
-      // var topTracks = getFromApi('artists/' + artistId + '/top-tracks')
+      })
     })
     getRelated.on('error', function () {
       res.sendStatus(404)
